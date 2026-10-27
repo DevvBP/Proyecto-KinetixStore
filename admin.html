@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html class="dark" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KinexStore — Back-Office Suite (Admin Preview)</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary-fixed": "#c3f400",
+                        "primary-fixed-dim": "#abd600",
+                        "border-industrial": "#333333",
+                        "surface-charcoal": "#1A1A1A",
+                        "surface-dark": "#131313",
+                        "surface-card": "#201f1f",
+                        "surface-hover": "#2a2a2a",
+                        "text-muted": "#A1A1A1",
+                        "rogue-red": "#D11919",
+                        "error-container": "#93000a",
+                        "on-surface": "#e5e2e1"
+                    },
+                    fontFamily: {
+                        "display": ["IBM Plex Sans", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"]
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="kinexstore-package/styles.css">
+</head>
+<body class="bg-[#0A0A0A] text-on-surface antialiased min-h-screen flex font-body selection:bg-primary-fixed selection:text-black overflow-x-hidden">
+
+    <!-- Toast de Notificación Flash -->
+    <div id="admin-toast" class="fixed top-5 right-5 z-[300] bg-primary-fixed text-black font-mono text-xs px-5 py-3 rounded shadow-2xl shadow-primary-fixed/30 flex items-center gap-3 hidden transition-all duration-300">
+        <span class="material-symbols-outlined text-base">check_circle</span>
+        <span id="admin-toast-text">Acción completada con éxito</span>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- BARRA LATERAL FIJA (SIDEBAR) -->
+    <!-- ============================================================== -->
+    <aside id="admin-sidebar"
+           class="w-64 bg-[#131313] border-r border-border-industrial fixed inset-y-0 left-0 z-50 flex flex-col transition-transform duration-300 -translate-x-full md:translate-x-0">
+
+        <!-- Brand Header -->
+        <div class="h-16 flex items-center justify-between px-6 border-b border-border-industrial">
+            <a href="javascript:void(0)" onclick="switchTab('dashboard')" class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-primary-fixed text-2xl">fitness_center</span>
+                <span class="font-display font-bold text-lg text-white tracking-tight">Kinex<span class="text-primary-fixed">Admin</span></span>
+            </a>
+            <span class="bg-primary-fixed/10 border border-primary-fixed text-primary-fixed font-mono text-[10px] px-1.5 py-0.5 rounded uppercase font-semibold">
+                PREVIEW
+            </span>
+        </div>
+
+        <!-- Menú de Navegación de los 7 Módulos -->
+        <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto font-mono text-xs" aria-label="Menú Administrativo">
+
+            <div class="px-3 py-1 text-[10px] uppercase font-bold text-text-muted/60 tracking-wider">
+                Métricas &amp; Control
+            </div>
+
+            <!-- 1. Dashboard -->
+            <button onclick="switchTab('dashboard')" id="tab-btn-dashboard"
+                    class="nav-tab-btn w-full text-left flex items-center gap-3 px-3 py-2.5 rounded transition-all duration-150 bg-primary-fixed text-black font-semibold shadow-lg shadow-primary-fixed/20">
+                <span class="material-symbols-outlined text-lg">dashboard</span>
+                <span>Dashboard</span>
+            </button>
+
+            <div class="pt-4 px-3 py-1 text-[10px] uppercase font-bold text-text-muted/60 tracking-wider">
+                Gestión de Inventario
+            </div>
+
+            <!-- 2. Maquinaria Pesada -->
+            <button onclick="switchTab('maquinas')" id="tab-btn-maquinas"
+                    class="nav-tab-btn w-full text-left flex items-center gap-3 px-3 py-2.5 rounded transition-all duration-150 text-text-muted hover:text-white hover:bg-surface-card">
+                <span class="material-symbols-outlined text-lg">precision_manufacturing</span>
+                <span>Maquinaria Pesada</span>
+            </button>
+
+            <!-- 3. Suplementación & Lotes -->
+            <button onclick="switchTab('suplementos')" id="tab-btn-suplementos"
+                    class="nav-tab-btn w-full text-left flex items-center gap-3 px-3 py-2.5 rounded transition-all duration-150 text-text-muted hover:text-white hover:bg-surface-card">
+                <span class="material-symbols-outlined text-lg">medication</span>
+                <span>Suplementos &amp; Lotes</span>
+            </button>
+
+            <div class="pt-4 px-3 py-1 text-[10px] uppercase font-bold text-text-muted/60 tracking-wider">
+                Operaciones &amp; Clientes
+            </div>
+
+            <!-- 4. Pedidos & Logística -->
+            <button onclick="switchTab('pedidos')" id="tab-btn-pedidos"
+                    class="nav-tab-btn w-full text-left flex items-center gap-3 px-3 py-2.5 rounded transition-all duration-150 text-text-muted hover:text-white hover:bg-surface-card">
+                <span class="material-symbols-outlined text-lg">local_shipping</span>
+                <span>Pedidos &amp; Fletes</span>
+            </button>
+
+            <!-- 5. Planes de Entrenamiento -->
+            <button onclick="switchTab('planes')" id="tab-btn-planes"
+                    class="nav-tab-btn w-full text-left flex items-center gap-3 px-3 py-2.5 rounded transition-all duration-150 text-text-muted hover:text-white hover:bg-surface-card">
+                <span class="material-symbols-outlined text-lg">assignment_ind</span>
+                <span>Planes &amp; Rutinas</span>
+            </button>
+
+            <!-- 6. Directorio de Usuarios -->
+            <button onclick="switchTab('usuarios')" id="tab-btn-usuarios"
+                    class="nav-tab-btn w-full text-left flex items-center gap-3 px-3 py-2.5 rounded transition-all duration-150 text-text-muted hover:text-white hover:bg-surface-card">
+                <span class="material-symbols-outlined text-lg">manage_accounts</span>
+                <span>Usuarios &amp; Roles</span>
+            </button>
+
+            <!-- 7. Marketing & Promociones -->
+            <button onclick="switchTab('promos')" id="tab-btn-promos"
+                    class="nav-tab-btn w-full text-left flex items-center gap-3 px-3 py-2.5 rounded transition-all duration-150 text-text-muted hover:text-white hover:bg-surface-card">
+                <span class="material-symbols-outlined text-lg">loyalty</span>
+                <span>Marketing &amp; Cupones</span>
+            </button>
+        </nav>
+
+        <!-- Footer Sidebar -->
+        <div class="p-4 border-t border-border-industrial bg-[#0E0E0E]">
+            <a href="kinexstore-package/index.html" class="flex items-center justify-between text-[11px] text-text-muted hover:text-primary-fixed font-mono transition-colors">
+                <span>← Volver a la Tienda</span>
+                <span class="material-symbols-outlined text-sm">storefront</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Backdrop móvil -->
+    <div id="admin-sidebar-backdrop" class="fixed inset-0 bg-black/60 z-40 hidden md:hidden" onclick="toggleAdminSidebar()"></div>
+
+    <!-- ============================================================== -->
+    <!-- CONTENEDOR PRINCIPAL CON HEADER SUPERIOR -->
+    <!-- ============================================================== -->
+    <div class="flex-1 flex flex-col min-w-0 md:pl-64">
+
+        <!-- Top Header Superior -->
+        <header class="h-16 bg-[#131313]/90 backdrop-blur-md border-b border-border-industrial sticky top-0 z-40 px-6 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-text-muted hover:text-primary-fixed p-1.5 rounded focus:outline-none" onclick="toggleAdminSidebar()">
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
+                <div class="flex items-center gap-2 font-mono text-xs text-text-muted">
+                    <span class="text-primary-fixed uppercase tracking-wider font-semibold">KinexStore Suite</span>
+                    <span>/</span>
+                    <span id="header-breadcrumb" class="text-white capitalize">Dashboard</span>
+                </div>
+            </div>
+
+            <!-- Perfil & Botón Tienda -->
+            <div class="flex items-center gap-4">
+                <a href="kinexstore-package/index.html" class="hidden sm:flex items-center gap-1.5 font-mono text-xs text-text-muted hover:text-primary-fixed px-3 py-1.5 rounded border border-border-industrial hover:border-primary-fixed transition-all">
+                    <span class="material-symbols-outlined text-[16px]">storefront</span>
+                    <span>Ver Tienda Pública</span>
+                </a>
+
+                <div class="flex items-center gap-3 pl-3 border-l border-border-industrial">
+                    <div class="w-8 h-8 rounded-full bg-primary-fixed/20 border border-primary-fixed text-primary-fixed flex items-center justify-center font-mono font-bold text-xs">
+                        A
+                    </div>
+                    <div class="hidden lg:flex flex-col text-left">
+                        <span class="text-xs font-semibold text-white leading-tight">Super Administrador</span>
+                        <span class="text-[10px] font-mono text-primary-fixed">ADMINISTRADOR</span>
+                    </div>
+                    <a href="kinexstore-package/index.html" class="text-text-muted hover:text-rogue-red transition-colors p-1.5 rounded hover:bg-surface-card" title="Salir">
+                        <span class="material-symbols-outlined text-[20px]">logout</span>
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content (Módulos Inyectados) -->
+        <main class="flex-1 p-6 lg:p-8 bg-[#0A0A0A] overflow-y-auto">
+
+            <!-- ============================================================== -->
+            <!-- 1. MÓDULO: DASHBOARD -->
+            <!-- ============================================================== -->
+            <div id="view-dashboard" class="admin-tab-content">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                    <div>
+                        <h1 class="font-display font-bold text-2xl lg:text-3xl text-white">Dashboard Ejecutivo</h1>
+                        <p class="font-mono text-xs text-text-muted mt-1">Métricas clave de rendimiento, ventas y estado de inventario en tiempo real.</p>
+                    </div>
+                    <span class="font-mono text-xs text-primary-fixed bg-surface-card px-3 py-1.5 rounded border border-border-industrial">
+                        ● Estado: Conectado
+                    </span>
+                </div>
+
+                <!-- Grid de 4 KPIs -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+                    <div class="bg-surface-charcoal border border-border-industrial rounded p-5 hover:border-primary-fixed transition-all group">
+                        <div class="flex items-center justify-between text-text-muted mb-3">
+                            <span class="font-mono text-xs uppercase tracking-wider font-semibold">Ventas del Mes</span>
+                            <span class="material-symbols-outlined text-primary-fixed group-hover:scale-110 transition-transform">monetization_on</span>
+                        </div>
+                        <div class="font-mono text-2xl font-bold text-white tracking-tight">$ 32.720.000 COP</div>
+                        <div class="flex items-center gap-1 mt-2 font-mono text-[11px] text-primary-fixed">
+                            <span class="material-symbols-outlined text-sm">trending_up</span>
+                            <span>+18.4% vs mes anterior</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-surface-charcoal border border-border-industrial rounded p-5 hover:border-primary-fixed transition-all group">
+                        <div class="flex items-center justify-between text-text-muted mb-3">
+                            <span class="font-mono text-xs uppercase tracking-wider font-semibold">Pedidos Pendientes</span>
+                            <span class="material-symbols-outlined text-secondary group-hover:scale-110 transition-transform">pending_actions</span>
+                        </div>
+                        <div class="font-mono text-2xl font-bold text-white tracking-tight">2 órdenes</div>
+                        <div class="mt-2 font-mono text-[11px] text-text-muted">Requieren despacho de bodega</div>
+                    </div>
+
+                    <div class="bg-surface-charcoal border border-border-industrial rounded p-5 hover:border-rogue-red transition-all group">
+                        <div class="flex items-center justify-between text-text-muted mb-3">
+                            <span class="font-mono text-xs uppercase tracking-wider font-semibold">Stock Crítico</span>
+                            <span class="material-symbols-outlined text-rogue-red group-hover:scale-110 transition-transform">warning</span>
+                        </div>
+                        <div class="font-mono text-2xl font-bold text-white tracking-tight">2 ítems</div>
+                        <div class="mt-2 font-mono text-[11px] text-rogue-red font-semibold">≤ 5 unidades disponibles</div>
+                    </div>
+
+                    <div class="bg-surface-charcoal border border-border-industrial rounded p-5 hover:border-primary-fixed transition-all group">
+                        <div class="flex items-center justify-between text-text-muted mb-3">
+                            <span class="font-mono text-xs uppercase tracking-wider font-semibold">Atletas Registrados</span>
+                            <span class="material-symbols-outlined text-primary-fixed group-hover:scale-110 transition-transform">group</span>
+                        </div>
+                        <div class="font-mono text-2xl font-bold text-white tracking-tight">6 clientes</div>
+                        <div class="mt-2 font-mono text-[11px] text-primary-fixed font-semibold">+12 nuevos este mes</div>
+                    </div>
+                </div>
+
+                <!-- Gráfico y Stock Crítico -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                    <div class="lg:col-span-2 bg-surface-charcoal border border-border-industrial rounded p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="font-display font-semibold text-lg text-white">Ingresos Semanales por Categoría</h2>
+                            <span class="font-mono text-xs text-text-muted">Cifras en Millones COP</span>
+                        </div>
+                        <div class="space-y-4 font-mono text-xs">
+                            <div>
+                                <div class="flex justify-between mb-1 text-text-muted"><span>Semana 1 (Maquinaria Pesada)</span><span class="text-white font-bold">$ 18.2M</span></div>
+                                <div class="w-full bg-[#131313] h-3 rounded overflow-hidden"><div class="bg-primary-fixed h-full rounded" style="width: 75%;"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-1 text-text-muted"><span>Semana 2 (Suplementación Élite)</span><span class="text-white font-bold">$ 12.8M</span></div>
+                                <div class="w-full bg-[#131313] h-3 rounded overflow-hidden"><div class="bg-primary-fixed/80 h-full rounded" style="width: 55%;"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-1 text-text-muted"><span>Semana 3 (Equipamiento Comercial Mayorista)</span><span class="text-white font-bold">$ 24.5M</span></div>
+                                <div class="w-full bg-[#131313] h-3 rounded overflow-hidden"><div class="bg-primary-fixed h-full rounded" style="width: 95%;"></div></div>
+                            </div>
+                        </div>
+                        <div class="mt-6 pt-4 border-t border-border-industrial flex flex-wrap items-center justify-between text-xs font-mono text-text-muted gap-2">
+                            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-primary-fixed rounded-full"></span> Maquinaria: 68%</span>
+                            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-secondary rounded-full"></span> Suplementación: 24%</span>
+                            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-white/40 rounded-full"></span> Planes: 8%</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-surface-charcoal border border-border-industrial rounded p-6 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <h2 class="font-display font-semibold text-lg text-white">Stock Crítico</h2>
+                                <button onclick="switchTab('suplementos')" class="font-mono text-xs text-primary-fixed hover:underline">Ver inventario</button>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="bg-[#131313] border border-border-industrial rounded p-3 flex items-center justify-between">
+                                    <div>
+                                        <p class="font-mono text-xs text-white font-semibold">BCAA Complex + Electrolitos</p>
+                                        <p class="font-mono text-[11px] text-text-muted">Lote LOT-BCAA-2025D</p>
+                                    </div>
+                                    <span class="bg-rogue-red/20 text-rogue-red border border-rogue-red font-mono text-xs px-2 py-1 rounded font-bold">4 un.</span>
+                                </div>
+                                <div class="bg-[#131313] border border-border-industrial rounded p-3 flex items-center justify-between">
+                                    <div>
+                                        <p class="font-mono text-xs text-white font-semibold">Pre-Workout Nootrópico</p>
+                                        <p class="font-mono text-[11px] text-text-muted">Lote LOT-PRE-2026F</p>
+                                    </div>
+                                    <span class="bg-rogue-red/20 text-rogue-red border border-rogue-red font-mono text-xs px-2 py-1 rounded font-bold">2 un.</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="switchTab('maquinas')" class="mt-4 w-full bg-[#131313] border border-border-industrial hover:border-primary-fixed hover:text-primary-fixed text-text-muted font-mono text-xs py-2 px-4 rounded flex items-center justify-center gap-2 transition-all">
+                            <span class="material-symbols-outlined text-sm">add_box</span>
+                            <span>Ingresar Nuevo Equipo</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================== -->
+            <!-- 2. MÓDULO: MAQUINARIA PESADA -->
+            <!-- ============================================================== -->
+            <div id="view-maquinas" class="admin-tab-content hidden">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                    <div>
+                        <h1 class="font-display font-bold text-2xl lg:text-3xl text-white">Inventario de Maquinaria Pesada</h1>
+                        <p class="font-mono text-xs text-text-muted mt-1">Gestión de jaulas, prensas, poleas, precios y descuentos mayoristas.</p>
+                    </div>
+                    <button onclick="showToast('Formulario de registro abierto')" class="bg-primary-fixed hover:bg-white text-black font-mono font-bold text-xs px-5 py-2.5 rounded flex items-center gap-2 transition-all shadow-lg shadow-primary-fixed/20">
+                        <span class="material-symbols-outlined text-sm font-bold">add</span>
+                        <span>Registrar Nueva Máquina</span>
+                    </button>
+                </div>
+
+                <div class="bg-surface-charcoal border border-border-industrial rounded overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left font-mono text-xs">
+                            <thead>
+                                <tr class="bg-[#131313] border-b border-border-industrial text-text-muted uppercase text-[10px] tracking-wider">
+                                    <th class="py-3.5 px-4">Equipo</th>
+                                    <th class="py-3.5 px-4">Categoría</th>
+                                    <th class="py-3.5 px-4">Dimensiones &amp; Peso</th>
+                                    <th class="py-3.5 px-4">Precio Detal</th>
+                                    <th class="py-3.5 px-4">Descuento Mayorista</th>
+                                    <th class="py-3.5 px-4">Stock</th>
+                                    <th class="py-3.5 px-4 text-right">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-border-industrial">
+                                <tr class="hover:bg-surface-hover transition-colors">
+                                    <td class="py-3.5 px-4 font-bold text-white flex items-center gap-3">
+                                        <img src="kinexstore-package/assets/img/eq-powerrack.jpg" class="w-10 h-10 object-cover rounded bg-black">
+                                        <div>Power Rack Pro X1<div class="text-[10px] text-text-muted font-normal">#KNX-EQ-1</div></div>
+                                    </td>
+                                    <td class="py-3.5 px-4"><span class="bg-surface-card border border-border-industrial px-2 py-0.5 rounded text-[10px]">racks</span></td>
+                                    <td class="py-3.5 px-4 text-text-muted">📏 215 x 135 x 220 cm<div class="text-[10px]">⚖️ 120 kg</div></td>
+                                    <td class="py-3.5 px-4 text-primary-fixed font-bold">$ 3.590.000 COP</td>
+                                    <td class="py-3.5 px-4"><span class="bg-primary-fixed/10 border border-primary-fixed text-primary-fixed px-2 py-0.5 rounded text-[10px] font-semibold">-12% (+3 un.)</span></td>
+                                    <td class="py-3.5 px-4 text-emerald-400 font-bold">8 un.</td>
+                                    <td class="py-3.5 px-4 text-right"><button onclick="showToast('Editando Power Rack Pro X1')" class="text-text-muted hover:text-primary-fixed p-1"><span class="material-symbols-outlined text-sm">edit</span></button></td>
+                                </tr>
+                                <tr class="hover:bg-surface-hover transition-colors">
+                                    <td class="py-3.5 px-4 font-bold text-white flex items-center gap-3">
+                                        <img src="kinexstore-package/assets/img/eq-prensa.jpg" class="w-10 h-10 object-cover rounded bg-black">
+                                        <div>Prensa de Piernas 45°<div class="text-[10px] text-text-muted font-normal">#KNX-EQ-2</div></div>
+                                    </td>
+                                    <td class="py-3.5 px-4"><span class="bg-surface-card border border-border-industrial px-2 py-0.5 rounded text-[10px]">prensas</span></td>
+                                    <td class="py-3.5 px-4 text-text-muted">📏 240 x 150 x 160 cm<div class="text-[10px]">⚖️ 200 kg</div></td>
+                                    <td class="py-3.5 px-4 text-primary-fixed font-bold">$ 5.000.000 COP</td>
+                                    <td class="py-3.5 px-4"><span class="bg-primary-fixed/10 border border-primary-fixed text-primary-fixed px-2 py-0.5 rounded text-[10px] font-semibold">-10% (+3 un.)</span></td>
+                                    <td class="py-3.5 px-4 text-emerald-400 font-bold">5 un.</td>
+                                    <td class="py-3.5 px-4 text-right"><button onclick="showToast('Editando Prensa 45°')" class="text-text-muted hover:text-primary-fixed p-1"><span class="material-symbols-outlined text-sm">edit</span></button></td>
+                                </tr>
+                                <tr class="hover:bg-surface-hover transition-colors">
+                                    <td class="py-3.5 px-4 font-bold text-white flex items-center gap-3">
+                                        <img src="kinexstore-package/assets/img/eq-poleas.jpg" class="w-10 h-10 object-cover rounded bg-black">
+                                        <div>Torre de Poleas Dual<div class="text-[10px] text-text-muted font-normal">#KNX-EQ-3</div></div>
+                                    </td>
+                                    <td class="py-3.5 px-4"><span class="bg-surface-card border border-border-industrial px-2 py-0.5 rounded text-[10px]">poleas</span></td>
+                                    <td class="py-3.5 px-4 text-text-muted">📏 170 x 110 x 230 cm<div class="text-[10px]">⚖️ 150 kg</div></td>
+                                    <td class="py-3.5 px-4 text-primary-fixed font-bold">$ 7.200.000 COP</td>
+                                    <td class="py-3.5 px-4"><span class="bg-primary-fixed/10 border border-primary-fixed text-primary-fixed px-2 py-0.5 rounded text-[10px] font-semibold">-15% (+3 un.)</span></td>
+                                    <td class="py-3.5 px-4 text-rogue-red font-bold">3 un. (Bajo)</td>
+                                    <td class="py-3.5 px-4 text-right"><button onclick="showToast('Editando Torre de Poleas')" class="text-text-muted hover:text-primary-fixed p-1"><span class="material-symbols-outlined text-sm">edit</span></button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================== -->
+            <!-- 3. MÓDULO: SUPLEMENTACIÓN & LOTES -->
+            <!-- ============================================================== -->
+            <div id="view-suplementos" class="admin-tab-content hidden">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                    <div>
+                        <h1 class="font-display font-bold text-2xl lg:text-3xl text-white">Inventario de Suplementos &amp; Lotes</h1>
+                        <p class="font-mono text-xs text-text-muted mt-1">Control de caducidad, registro sanitario INVIMA y seguimiento por lote.</p>
+                    </div>
+                    <button onclick="showToast('Nuevo lote registrado')" class="bg-primary-fixed hover:bg-white text-black font-mono font-bold text-xs px-5 py-2.5 rounded flex items-center gap-2 transition-all shadow-lg shadow-primary-fixed/20">
+                        <span class="material-symbols-outlined text-sm font-bold">add</span>
+                        <span>Registrar Suplemento / Lote</span>
+                    </button>
+                </div>
+
+                <div class="bg-surface-charcoal border border-border-industrial rounded overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left font-mono text-xs">
+                            <thead>
+                                <tr class="bg-[#131313] border-b border-border-industrial text-text-muted uppercase text-[10px] tracking-wider">
+                                    <th class="py-3.5 px-4">Suplemento</th>
+                                    <th class="py-3.5 px-4">Lote</th>
+                                    <th class="py-3.5 px-4">Vencimiento &amp; Estado</th>
+                                    <th class="py-3.5 px-4">Registro INVIMA</th>
+                                    <th class="py-3.5 px-4">Precio Detal</th>
+                                    <th class="py-3.5 px-4">Stock</th>
+                                    <th class="py-3.5 px-4 text-right">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-border-industrial">
+                                <tr class="hover:bg-surface-hover transition-colors">
+                                    <td class="py-3.5 px-4 font-bold text-white flex items-center gap-3">
+                                        <img src="kinexstore-package/assets/img/supp-whey.jpg" class="w-10 h-10 object-cover rounded bg-black">
+                                        <div>Whey Protein Isolate<div class="text-[10px] text-text-muted font-normal">2.0 kg / Vainilla</div></div>
+                                    </td>
+                                    <td class="py-3.5 px-4"><span class="bg-[#131313] border border-border-industrial px-2 py-0.5 rounded text-[11px] text-primary-fixed">LOT-WHEY-2026B</span></td>
+                                    <td class="py-3.5 px-4"><span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] px-2 py-0.5 rounded font-bold">✓ Óptimo (420d)</span></td>
+                                    <td class="py-3.5 px-4 text-text-muted">RSA-0019281</td>
+                                    <td class="py-3.5 px-4 text-primary-fixed font-bold">$ 260.000 COP</td>
+                                    <td class="py-3.5 px-4 text-emerald-400 font-bold">45 un.</td>
+                                    <td class="py-3.5 px-4 text-right"><button onclick="showToast('Editando Lote Whey')" class="text-text-muted hover:text-primary-fixed p-1"><span class="material-symbols-outlined text-sm">edit</span></button></td>
+                                </tr>
+                                <tr class="hover:bg-surface-hover transition-colors">
+                                    <td class="py-3.5 px-4 font-bold text-white flex items-center gap-3">
+                                        <img src="kinexstore-package/assets/img/supp-creatina.jpg" class="w-10 h-10 object-cover rounded bg-black">
+                                        <div>Creatina Monohidratada 500g<div class="text-[10px] text-text-muted font-normal">0.5 kg Micronizada</div></div>
+                                    </td>
+                                    <td class="py-3.5 px-4"><span class="bg-[#131313] border border-border-industrial px-2 py-0.5 rounded text-[11px] text-primary-fixed">LOT-CREA-2026A</span></td>
+                                    <td class="py-3.5 px-4"><span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] px-2 py-0.5 rounded font-bold">✓ Óptimo (540d)</span></td>
+                                    <td class="py-3.5 px-4 text-text-muted">RSA-0028472</td>
+                                    <td class="py-3.5 px-4 text-primary-fixed font-bold">$ 140.000 COP</td>
+                                    <td class="py-3.5 px-4 text-emerald-400 font-bold">60 un.</td>
+                                    <td class="py-3.5 px-4 text-right"><button onclick="showToast('Editando Lote Creatina')" class="text-text-muted hover:text-primary-fixed p-1"><span class="material-symbols-outlined text-sm">edit</span></button></td>
+                                </tr>
+                                <tr class="hover:bg-surface-hover transition-colors">
+                                    <td class="py-3.5 px-4 font-bold text-white flex items-center gap-3">
+                                        <img src="kinexstore-package/assets/img/supp-bcaa.jpg" class="w-10 h-10 object-cover rounded bg-black">
+                                        <div>BCAA Complex + Electrolitos<div class="text-[10px] text-text-muted font-normal">1.0 kg Polvo</div></div>
+                                    </td>
+                                    <td class="py-3.5 px-4"><span class="bg-[#131313] border border-border-industrial px-2 py-0.5 rounded text-[11px] text-primary-fixed">LOT-BCAA-2025D</span></td>
+                                    <td class="py-3.5 px-4"><span class="bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[10px] px-2 py-0.5 rounded font-bold">⚠️ Próx. a vencer (45d)</span></td>
+                                    <td class="py-3.5 px-4 text-text-muted">RSA-0039201</td>
+                                    <td class="py-3.5 px-4 text-primary-fixed font-bold">$ 160.000 COP</td>
+                                    <td class="py-3.5 px-4 text-rogue-red font-bold">4 un. (Crítico)</td>
+                                    <td class="py-3.5 px-4 text-right"><button onclick="showToast('Editando Lote BCAA')" class="text-text-muted hover:text-primary-fixed p-1"><span class="material-symbols-outlined text-sm">edit</span></button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================== -->
+            <!-- 4. MÓDULO: PEDIDOS & LOGÍSTICA -->
+            <!-- ============================================================== -->
+            <div id="view-pedidos" class="admin-tab-content hidden">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                    <div>
+                        <h1 class="font-display font-bold text-2xl lg:text-3xl text-white">Gestión de Pedidos &amp; Logística</h1>
+                        <p class="font-mono text-xs text-text-muted mt-1">Bandeja de despacho, estados de orden, transportadoras de carga pesada y guías.</p>
+                    </div>
+                </div>
+
+                <div class="bg-surface-charcoal border border-border-industrial rounded overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left font-mono text-xs">
+                            <thead>
+                                <tr class="bg-[#131313] border-b border-border-industrial text-text-muted uppercase text-[10px] tracking-wider">
+                                    <th class="py-3.5 px-4">No. Orden</th>
+                                    <th class="py-3.5 px-4">Cliente &amp; Destino</th>
+                                    <th class="py-3.5 px-4">Tipo Logística</th>
+                                    <th class="py-3.5 px-4">Transportadora &amp; Guía</th>
+                                    <th class="py-3.5 px-4">Monto Total</th>
+                                    <th class="py-3.5 px-4">Estado</th>
+                                    <th class="py-3.5 px-4 text-right">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-border-industrial">
+                                <tr class="hover:bg-surface-hover transition-colors">
+                                    <td class="py-3.5 px-4 font-bold text-white">ORD-2026-101<div class="text-[10px] text-text-muted font-normal">Hoy 10:15 AM</div></td>
+                                    <td class="py-3.5 px-4"><div class="font-bold text-white">Gimnasio IronCore SAS</div><div class="text-[10px] text-text-muted">Bogotá — Calle 100 # 19-61</div></td>
+                                    <td class="py-3.5 px-4"><span class="bg-primary-fixed/10 border border-primary-fixed text-primary-fixed px-2 py-0.5 rounded text-[10px] font-bold">🚜 CARGA PESADA</span></td>
+                                    <td class="py-3.5 px-4"><div class="text-white">Kinex Heavy Freight</div><div class="text-[10px] text-primary-fixed">KNX-LOG-4412</div></td>
+                                    <td class="py-3.5 px-4 text-primary-fixed font-bold">$ 12.320.000 COP</td>
+                                    <td class="py-3.5 px-4"><span class="bg-secondary/20 text-secondary border border-secondary/40 text-[10px] px-2.5 py-1 rounded font-bold">PENDIENTE</span></td>
+                                    <td class="py-3.5 px-4 text-right"><button onclick="showToast('Actualizando Orden 101')" class="bg-[#131313] hover:bg-primary-fixed hover:text-black text-white px-3 py-1.5 rounded border border-border-industrial transition-all">Actualizar</button></td>
+                                </tr>
+                                <tr class="hover:bg-surface-hover transition-colors">
+                                    <td class="py-3.5 px-4 font-bold text-white">ORD-2026-102<div class="text-[10px] text-text-muted font-normal">Ayer 04:30 PM</div></td>
+                                    <td class="py-3.5 px-4"><div class="font-bold text-white">Valeria Ríos</div><div class="text-[10px] text-text-muted">Medellín — Cra 43A # 1-50</div></td>
+                                    <td class="py-3.5 px-4"><span class="bg-surface-card border border-border-industrial text-text-muted px-2 py-0.5 rounded text-[10px]">📦 Paquetería Estándar</span></td>
+                                    <td class="py-3.5 px-4"><div class="text-white">Servientrega Express</div><div class="text-[10px] text-primary-fixed">SER-9928341</div></td>
+                                    <td class="py-3.5 px-4 text-primary-fixed font-bold">$ 695.000 COP</td>
+                                    <td class="py-3.5 px-4"><span class="bg-primary-fixed/20 text-primary-fixed border border-primary-fixed/40 text-[10px] px-2.5 py-1 rounded font-bold">EMPACADO</span></td>
+                                    <td class="py-3.5 px-4 text-right"><button onclick="showToast('Actualizando Orden 102')" class="bg-[#131313] hover:bg-primary-fixed hover:text-black text-white px-3 py-1.5 rounded border border-border-industrial transition-all">Actualizar</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================== -->
+            <!-- 5. MÓDULO: PLANES & RUTINAS -->
+            <!-- ============================================================== -->
+            <div id="view-planes" class="admin-tab-content hidden">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                    <div>
+                        <h1 class="font-display font-bold text-2xl lg:text-3xl text-white">Administración de Planes &amp; Rutinas</h1>
+                        <p class="font-mono text-xs text-text-muted mt-1">Asignación de entrenadores, protocolos biomecánicos y entrega de PDFs.</p>
+                    </div>
+                </div>
+
+                <div class="bg-surface-charcoal border border-border-industrial rounded overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left font-mono text-xs">
+                            <thead>
+                                <tr class="bg-[#131313] border-b border-border-industrial text-text-muted uppercase text-[10px] tracking-wider">
+                                    <th class="py-3.5 px-4">Cliente</th>
+                                    <th class="py-3.5 px-4">Perfil</th>
+                                    <th class="py-3.5 px-4">Objetivo</th>
+                                    <th class="py-3.5 px-4">Entrenador</th>
+                                    <th class="py-3.5 px-4">Documento PDF</th>
+                                    <th class="py-3.5 px-4">Estado</th>
+                                    <th class="py-3.5 px-4 text-right">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-border-industrial">
+                                <tr class="hover:bg-surface-hover transition-colors">
+                                    <td class="py-3.5 px-4 font-bold text-white">Carlos Mendoza<div class="text-[10px] text-text-muted font-normal">carlos.atleta@gmail.com</div></td>
+                                    <td class="py-3.5 px-4">Avanzado<div class="text-[10px] text-text-muted">5 días / semana</div></td>
+                                    <td class="py-3.5 px-4"><span class="bg-surface-card border border-border-industrial text-white px-2 py-0.5 rounded text-[10px]">Hipertrofia</span></td>
+                                    <td class="py-3.5 px-4 text-white font-semibold">Coach Mateo Silva</td>
+                                    <td class="py-3.5 px-4 text-primary-fixed underline">Plan_Hipertrofia_Carlos.pdf</td>
+                                    <td class="py-3.5 px-4"><span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] px-2 py-0.5 rounded font-bold">✓ ENTREGADO</span></td>
+                                    <td class="py-3.5 px-4 text-right"><button onclick="showToast('Abriendo protocolo de Carlos Mendoza')" class="bg-[#131313] hover:bg-primary-fixed hover:text-black text-white px-3 py-1.5 rounded border border-border-industrial transition-all">Gestionar</button></td>
+                                </tr>
+                                <tr class="hover:bg-surface-hover transition-colors">
+                                    <td class="py-3.5 px-4 font-bold text-white">Valeria Ríos<div class="text-[10px] text-text-muted font-normal">valeria.gym@fit.co</div></td>
+                                    <td class="py-3.5 px-4">Intermedio<div class="text-[10px] text-text-muted">4 días / semana</div></td>
+                                    <td class="py-3.5 px-4"><span class="bg-surface-card border border-border-industrial text-white px-2 py-0.5 rounded text-[10px]">Fuerza Máxima</span></td>
+                                    <td class="py-3.5 px-4 text-white font-semibold">Dra. Sofía Lozano</td>
+                                    <td class="py-3.5 px-4 text-text-muted italic">Pendiente de subir</td>
+                                    <td class="py-3.5 px-4"><span class="bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[10px] px-2 py-0.5 rounded font-bold">EN ELABORACIÓN</span></td>
+                                    <td class="py-3.5 px-4 text-right"><button onclick="showToast('Subir PDF para Valeria Ríos')" class="bg-[#131313] hover:bg-primary-fixed hover:text-black text-white px-3 py-1.5 rounded border border-border-industrial transition-all">Gestionar</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================== -->
+            <!-- 6. MÓDULO: USUARIOS & ROLES -->
+            <!-- ============================================================== -->
+            <div id="view-usuarios" class="admin-tab-content hidden">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                    <div>
+                        <h1 class="font-display font-bold text-2xl lg:text-3xl text-white">Directorio de Usuarios &amp; Roles</h1>
+                        <p class="font-mono text-xs text-text-muted mt-1">Control de acceso RBAC, asignación de permisos de Administrador y estado de cuenta.</p>
+                    </div>
+                </div>
+
+                <div class="bg-surface-charcoal border border-border-industrial rounded overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left font-mono text-xs">
+                            <thead>
+                                <tr class="bg-[#131313] border-b border-border-industrial text-text-muted uppercase text-[10px] tracking-wider">
+                                    <th class="py-3.5 px-4">Usuario</th>
+                                    <th class="py-3.5 px-4">Correo Electrónico</th>
+                                    <th class="py-3.5 px-4">Ubicación</th>
+                                    <th class="py-3.5 px-4">Rol RBAC</th>
+                                    <th class="py-3.5 px-4">Estado</th>
+                                    <th class="py-3.5 px-4 text-right">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-border-industrial">
+                                <tr class="hover:bg-surface-hover transition-colors">
+                                    <td class="py-3.5 px-4 font-bold text-white">Super Admin</td>
+                                    <td class="py-3.5 px-4">admin@kinexstore.co</td>
+                                    <td class="py-3.5 px-4 text-text-muted">Bogotá, Colombia</td>
+                                    <td class="py-3.5 px-4"><span class="bg-primary-fixed/20 text-primary-fixed border border-primary-fixed text-[10px] px-2.5 py-0.5 rounded font-bold">🛡️ ADMINISTRADOR</span></td>
+                                    <td class="py-3.5 px-4 text-emerald-400 font-bold">● Activo</td>
+                                    <td class="py-3.5 px-4 text-right"><span class="text-text-muted text-[10px]">Cuenta Principal</span></td>
+                                </tr>
+                                <tr class="hover:bg-surface-hover transition-colors">
+                                    <td class="py-3.5 px-4 font-bold text-white">Carlos Mendoza</td>
+                                    <td class="py-3.5 px-4">carlos.atleta@gmail.com</td>
+                                    <td class="py-3.5 px-4 text-text-muted">Bogotá, Colombia</td>
+                                    <td class="py-3.5 px-4"><span class="bg-surface-card border border-border-industrial text-text-muted text-[10px] px-2.5 py-0.5 rounded">👤 CLIENTE</span></td>
+                                    <td class="py-3.5 px-4 text-emerald-400 font-bold">● Activo</td>
+                                    <td class="py-3.5 px-4 text-right"><button onclick="showToast('Rol de Carlos cambiado a Administrador')" class="text-text-muted hover:text-primary-fixed p-1"><span class="material-symbols-outlined text-sm">add_moderator</span></button></td>
+                                </tr>
+                                <tr class="hover:bg-surface-hover transition-colors">
+                                    <td class="py-3.5 px-4 font-bold text-white">Valeria Ríos</td>
+                                    <td class="py-3.5 px-4">valeria.gym@fit.co</td>
+                                    <td class="py-3.5 px-4 text-text-muted">Medellín, Colombia</td>
+                                    <td class="py-3.5 px-4"><span class="bg-surface-card border border-border-industrial text-text-muted text-[10px] px-2.5 py-0.5 rounded">👤 CLIENTE</span></td>
+                                    <td class="py-3.5 px-4 text-emerald-400 font-bold">● Activo</td>
+                                    <td class="py-3.5 px-4 text-right"><button onclick="showToast('Rol de Valeria cambiado a Administrador')" class="text-text-muted hover:text-primary-fixed p-1"><span class="material-symbols-outlined text-sm">add_moderator</span></button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================== -->
+            <!-- 7. MÓDULO: MARKETING & PROMOCIONES -->
+            <!-- ============================================================== -->
+            <div id="view-promos" class="admin-tab-content hidden">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                    <div>
+                        <h1 class="font-display font-bold text-2xl lg:text-3xl text-white">Marketing, Cupones &amp; Banners</h1>
+                        <p class="font-mono text-xs text-text-muted mt-1">Generador de cupones de descuento, fechas de vigencia y banners promocionales.</p>
+                    </div>
+                    <button onclick="showToast('Nuevo cupón creado')" class="bg-primary-fixed hover:bg-white text-black font-mono font-bold text-xs px-5 py-2.5 rounded flex items-center gap-2 transition-all shadow-lg shadow-primary-fixed/20">
+                        <span class="material-symbols-outlined text-sm font-bold">add</span>
+                        <span>Crear Cupón / Banner</span>
+                    </button>
+                </div>
+
+                <div class="bg-surface-charcoal border border-border-industrial rounded overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left font-mono text-xs">
+                            <thead>
+                                <tr class="bg-[#131313] border-b border-border-industrial text-text-muted uppercase text-[10px] tracking-wider">
+                                    <th class="py-3.5 px-4">Código</th>
+                                    <th class="py-3.5 px-4">Campaña</th>
+                                    <th class="py-3.5 px-4">Descuento</th>
+                                    <th class="py-3.5 px-4">Compra Mínima</th>
+                                    <th class="py-3.5 px-4">Vigencia</th>
+                                    <th class="py-3.5 px-4">Estado</th>
+                                    <th class="py-3.5 px-4 text-right">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-border-industrial">
+                                <tr class="hover:bg-surface-hover transition-colors">
+                                    <td class="py-3.5 px-4"><span class="bg-primary-fixed/10 border border-primary-fixed text-primary-fixed font-bold text-sm px-2.5 py-1 rounded">GYM2026</span></td>
+                                    <td class="py-3.5 px-4"><div class="font-bold text-white">Descuento Año Nuevo Fitness</div><div class="text-[10px] text-text-muted">15% en pedidos superiores a $500.000 COP</div></td>
+                                    <td class="py-3.5 px-4 text-primary-fixed font-bold">-15% OFF</td>
+                                    <td class="py-3.5 px-4 text-text-muted">$ 500.000 COP</td>
+                                    <td class="py-3.5 px-4 text-emerald-400 font-bold">Vigente (31/12/2026)</td>
+                                    <td class="py-3.5 px-4"><span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] px-2 py-0.5 rounded font-bold">ACTIVA</span></td>
+                                    <td class="py-3.5 px-4 text-right"><button onclick="showToast('Promoción pausada')" class="text-text-muted hover:text-white p-1"><span class="material-symbols-outlined text-sm">pause</span></button></td>
+                                </tr>
+                                <tr class="hover:bg-surface-hover transition-colors">
+                                    <td class="py-3.5 px-4"><span class="bg-primary-fixed/10 border border-primary-fixed text-primary-fixed font-bold text-sm px-2.5 py-1 rounded">WHOLESALE20</span></td>
+                                    <td class="py-3.5 px-4"><div class="font-bold text-white">Descuento Mayorista Gyms</div><div class="text-[10px] text-text-muted">20% en maquinaria superior a $10.000.000 COP</div></td>
+                                    <td class="py-3.5 px-4 text-primary-fixed font-bold">-20% OFF</td>
+                                    <td class="py-3.5 px-4 text-text-muted">$ 10.000.000 COP</td>
+                                    <td class="py-3.5 px-4 text-emerald-400 font-bold">Vigente (31/12/2026)</td>
+                                    <td class="py-3.5 px-4"><span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] px-2 py-0.5 rounded font-bold">ACTIVA</span></td>
+                                    <td class="py-3.5 px-4 text-right"><button onclick="showToast('Promoción pausada')" class="text-text-muted hover:text-white p-1"><span class="material-symbols-outlined text-sm">pause</span></button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- LOGICA INTERACTIVA EN JAVASCRIPT -->
+    <!-- ============================================================== -->
+    <script>
+        const tabs = ['dashboard', 'maquinas', 'suplementos', 'pedidos', 'planes', 'usuarios', 'promos'];
+
+        function switchTab(tabId) {
+            tabs.forEach(t => {
+                const view = document.getElementById('view-' + t);
+                const btn = document.getElementById('tab-btn-' + t);
+                if (view) {
+                    view.classList.toggle('hidden', t !== tabId);
+                }
+                if (btn) {
+                    if (t === tabId) {
+                        btn.className = 'nav-tab-btn w-full text-left flex items-center gap-3 px-3 py-2.5 rounded transition-all duration-150 bg-primary-fixed text-black font-semibold shadow-lg shadow-primary-fixed/20';
+                    } else {
+                        btn.className = 'nav-tab-btn w-full text-left flex items-center gap-3 px-3 py-2.5 rounded transition-all duration-150 text-text-muted hover:text-white hover:bg-surface-card';
+                    }
+                }
+            });
+
+            // Actualizar breadcrumb
+            const breadcrumb = document.getElementById('header-breadcrumb');
+            if (breadcrumb) {
+                const names = {
+                    dashboard: 'Dashboard Ejecutivo',
+                    maquinas: 'Inventario de Maquinaria',
+                    suplementos: 'Suplementación & Lotes',
+                    pedidos: 'Gestión de Pedidos & Logística',
+                    planes: 'Planes & Rutinas',
+                    usuarios: 'Usuarios & Roles RBAC',
+                    promos: 'Marketing & Promociones'
+                };
+                breadcrumb.textContent = names[tabId] || tabId;
+            }
+
+            // Cerrar sidebar en móvil si está abierto
+            const sidebar = document.getElementById('admin-sidebar');
+            const backdrop = document.getElementById('admin-sidebar-backdrop');
+            if (sidebar && !sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.add('-translate-x-full');
+                backdrop?.classList.add('hidden');
+            }
+        }
+
+        function toggleAdminSidebar() {
+            const sidebar = document.getElementById('admin-sidebar');
+            const backdrop = document.getElementById('admin-sidebar-backdrop');
+            if (sidebar && backdrop) {
+                sidebar.classList.toggle('-translate-x-full');
+                backdrop.classList.toggle('hidden');
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('admin-toast');
+            const toastText = document.getElementById('admin-toast-text');
+            if (toast && toastText) {
+                toastText.textContent = '✓ ' + message;
+                toast.classList.remove('hidden');
+                setTimeout(() => toast.classList.add('hidden'), 3000);
+            }
+        }
+    </script>
+</body>
+</html>
