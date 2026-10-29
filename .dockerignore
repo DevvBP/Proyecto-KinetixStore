@@ -1,0 +1,9 @@
+target/
+**/target/
+.git/
+.vscode/
+.idea/
+*.log
+*.tmp
+*.zip
+Gym/
