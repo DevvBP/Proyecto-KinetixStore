@@ -60,6 +60,23 @@ Este documento certifica y documenta la culminación de las fases de expansión 
 
 ---
 
+### Fase 3: Parche Final de Refinamiento (UX/UI, Embudo y Calculadora Algorítmica)
+
+- [x] **Correcciones de UI y Embudo de Conversión:**
+  - [x] Accesorios (`accessories.jsp`): Eliminación de emojis decorativos en categorías para mantener una estética sobria y profesional.
+  - [x] Tarjetas de Objetivo (`home.jsp`): Enlaces modificados hacia `/planes/configurar` para guiar al usuario por el embudo de prescripción y descarga de PDF.
+  - [x] Footer (`footer.jsp`): Eliminación total de suscripción a Newsletter; integración de rutas lógicas y modales interactivos para Garantía Oficial/INVIMA y Políticas de Privacidad.
+- [x] **Calculadora Dinámica de Envíos por Peso (`CartService` y `cart.jsp`):**
+  - [x] Erradicación de tarifas planas estándar.
+  - [x] Algoritmo dinámico por peso implementado: Tarifa base ($ 15.000 COP primeros 5 kg) + recargo adicional ($ 2.000 COP) por cada kg extra o fracción; Express ($ 25.000 COP + $ 3.500 COP/kg extra); Flete pesado ($ 80.000 COP + $ 1.500 COP/kg extra).
+  - [x] `cart.jsp` adaptado con desglose en tiempo real y tarjeta explicativa del cálculo algorítmico.
+  - [x] Actualización de `CartServiceTest.java` (7 pruebas unitarias de carrito, 11 pruebas unitarias totales en verde).
+- [x] **Documentación Enterprise y Git:**
+  - [x] `README.md` reescrito con estándar Enterprise, diagrama de arquitectura Mermaid, stack tecnológico, capturas de pantalla de evidencias y guía paso a paso de ejecución.
+  - [x] Commits semánticos y sincronización en GitHub.
+
+---
+
 ## 🛠️ Arquitectura Técnica de la Generación de Planes PDF
 
 La exportación en PDF implementada en `PlanService.java` sigue las directrices de Clean Architecture y no depende del frontend:
@@ -78,3 +95,4 @@ La exportación en PDF implementada en `PlanService.java` sigue las directrices 
 4. **Entrega HTTP:**
    - `EcommerceController` expone `/planes/{id}/pdf` y `/planes/descargar-pdf`.
    - Cabeceras: `Content-Type: application/pdf` y `Content-Disposition: attachment; filename="Plan_KinexStore_<objetivo>.pdf"`.
+
