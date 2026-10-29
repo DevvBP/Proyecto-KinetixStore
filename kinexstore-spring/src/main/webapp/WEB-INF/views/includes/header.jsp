@@ -168,6 +168,11 @@
                 Suplementación
             </a>
             <a class="font-label-md text-label-md transition-colors py-2 cursor-pointer hover:font-semibold
+                      ${vistaActiva == 'accesorios' ? 'text-primary-fixed' : 'text-on-surface-variant hover:text-primary-fixed'}"
+               href="${contextPath}/catalogo/accesorios" id="nav-accesorios">
+                Accesorios
+            </a>
+            <a class="font-label-md text-label-md transition-colors py-2 cursor-pointer hover:font-semibold
                       ${vistaActiva == 'training' ? 'text-primary-fixed' : 'text-on-surface-variant hover:text-primary-fixed'}"
                href="${contextPath}/app?accion=configurarPlan" id="nav-planes">
                 Planes
@@ -225,6 +230,8 @@
            href="${contextPath}/app?accion=listarEquipamiento">Equipamiento</a>
         <a class="block font-label-md text-on-surface hover:text-primary-fixed py-2"
            href="${contextPath}/app?accion=listarSuplementos">Suplementación</a>
+        <a class="block font-label-md text-on-surface hover:text-primary-fixed py-2"
+           href="${contextPath}/catalogo/accesorios">Accesorios</a>
         <a class="block font-label-md text-on-surface hover:text-primary-fixed py-2"
            href="${contextPath}/app?accion=configurarPlan">Planes</a>
         <a class="block font-label-md text-on-surface hover:text-primary-fixed py-2"

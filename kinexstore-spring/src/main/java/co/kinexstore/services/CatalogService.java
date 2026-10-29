@@ -45,6 +45,15 @@ public class CatalogService {
         return productRepository.findByTipo(TipoProducto.SUPLEMENTO);
     }
 
+    public List<Product> obtenerAccesorios(List<String> categoriasFiltro) {
+        if (categoriasFiltro != null && !categoriasFiltro.isEmpty()) {
+            return productRepository.findByTipo(TipoProducto.ACCESORIO).stream()
+                    .filter(p -> categoriasFiltro.contains(p.getCategoria()))
+                    .toList();
+        }
+        return productRepository.findByTipo(TipoProducto.ACCESORIO);
+    }
+
     public List<Product> obtenerTodos() {
         return productRepository.findAll();
     }
@@ -95,5 +104,9 @@ public class CatalogService {
 
     public String[] getCategoriasSuplementos() {
         return new String[]{"proteinas", "creatinas", "preentrenos", "aminoacidos", "salud"};
+    }
+
+    public String[] getCategoriasAccesorios() {
+        return new String[]{"proteccion", "agarre", "hidratacion", "funcional", "recuperacion", "pesas", "fuerza", "medicion", "transporte"};
     }
 }

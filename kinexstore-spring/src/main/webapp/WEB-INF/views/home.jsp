@@ -210,7 +210,7 @@
                 </a>
 
                 <!-- Accesorios -->
-                <a href="${contextPath}/app?accion=listarEquipamiento"
+                <a href="${contextPath}/catalogo/accesorios"
                    class="bg-[#0A0A0A] border border-border-industrial rounded-DEFAULT p-6 h-80 relative overflow-hidden group cursor-pointer product-card"
                    id="cat-accesorios">
                     <img class="absolute inset-0 w-full h-full object-cover opacity-30 group-hover:opacity-50 transition-opacity duration-300 mix-blend-luminosity product-image"

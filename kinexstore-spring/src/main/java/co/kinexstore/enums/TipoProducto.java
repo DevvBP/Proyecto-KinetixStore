@@ -5,5 +5,6 @@ package co.kinexstore.enums;
  */
 public enum TipoProducto {
     EQUIPAMIENTO,
-    SUPLEMENTO
+    SUPLEMENTO,
+    ACCESORIO
 }
