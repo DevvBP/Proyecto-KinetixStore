@@ -170,12 +170,25 @@ public class EcommerceController {
     @GetMapping("/carrito")
     public String verCarrito(Model model, HttpSession session) {
         List<CartItem> items = cartService.getCarrito(session);
+        double pesoTotal = cartService.getPesoTotal(session);
+        String envioSugerido = cartService.sugerirModalidadEnvio(session);
+        double costoEstandar = cartService.calcularEnvio(pesoTotal, "estandar");
+        double costoExpress  = cartService.calcularEnvio(pesoTotal, "express");
+        double costoPesado   = cartService.calcularEnvio(pesoTotal, "pesado");
+        double costoSugerido = cartService.calcularEnvio(pesoTotal, envioSugerido);
+        String explicacionFlete = cartService.getExplicacionFlete(pesoTotal, envioSugerido);
+
         model.addAttribute("items", items);
         model.addAttribute("itemsCarrito", items);
         model.addAttribute("subtotal", cartService.calcularSubtotal(session));
-        model.addAttribute("pesoTotal", cartService.getPesoTotal(session));
-        model.addAttribute("envioSugerido", cartService.sugerirModalidadEnvio(session));
-        model.addAttribute("modalidadSugerida", cartService.sugerirModalidadEnvio(session));
+        model.addAttribute("pesoTotal", pesoTotal);
+        model.addAttribute("costoEstandar", costoEstandar);
+        model.addAttribute("costoExpress", costoExpress);
+        model.addAttribute("costoPesado", costoPesado);
+        model.addAttribute("envioSugerido", envioSugerido);
+        model.addAttribute("modalidadSugerida", envioSugerido);
+        model.addAttribute("costoSugerido", costoSugerido);
+        model.addAttribute("explicacionFlete", explicacionFlete);
         model.addAttribute("totalCOP", cartService.calcularTotal(session, "local"));
         model.addAttribute("vistaActiva", "carrito");
         return "cart";
@@ -197,7 +210,7 @@ public class EcommerceController {
         double subtotal = cartService.calcularSubtotal(session);
         double pesoTotal = cartService.getPesoTotal(session);
         String envioSugerido = cartService.sugerirModalidadEnvio(session);
-        double costoEnvio = cartService.calcularEnvio(envioSugerido);
+        double costoEnvio = cartService.calcularEnvio(pesoTotal, envioSugerido);
         double total = subtotal + costoEnvio;
 
         model.addAttribute("usuario", usuarioActual);
@@ -227,7 +240,7 @@ public class EcommerceController {
 
         double subtotal = cartService.calcularSubtotal(session);
         double pesoTotal = cartService.getPesoTotal(session);
-        double costoEnvio = cartService.calcularEnvio(modalidad);
+        double costoEnvio = cartService.calcularEnvio(pesoTotal, modalidad);
         double total = subtotal + costoEnvio;
         boolean esPesada = pesoTotal > 50;
 

@@ -81,18 +81,49 @@ class CartServiceTest {
     }
 
     @Test
-    @DisplayName("Debe calcular subtotal y total con diferentes modalidades de envío")
+    @DisplayName("Debe calcular subtotal y total con diferentes modalidades de envío dinámico")
     void testCalcularSubtotalYTotalConEnvio() {
-        cartService.agregar(session, creatina, 2); // 2 x 140.000 = 280.000 COP
+        cartService.agregar(session, creatina, 2); // 2 x 140.000 = 280.000 COP, peso = 1.0 kg (<= 5 kg)
 
         double subtotal = cartService.calcularSubtotal(session);
         assertEquals(280000.0, subtotal, 0.01);
 
-        double totalEstandar = cartService.calcularTotal(session, "estandar");
-        assertEquals(305000.0, totalEstandar, 0.01); // 280.000 + 25.000
+        // Envío local: $ 0 COP
+        double totalLocal = cartService.calcularTotal(session, "local");
+        assertEquals(280000.0, totalLocal, 0.01);
 
-        double totalPesado = cartService.calcularTotal(session, "pesado");
-        assertEquals(430000.0, totalPesado, 0.01); // 280.000 + 150.000
+        // Envío estándar base <= 5 kg: $ 15.000 COP -> Total: 295.000 COP
+        double totalEstandar = cartService.calcularTotal(session, "estandar");
+        assertEquals(295000.0, totalEstandar, 0.01);
+
+        // Envío express base <= 5 kg: $ 25.000 COP -> Total: 305.000 COP
+        double totalExpress = cartService.calcularTotal(session, "express");
+        assertEquals(305000.0, totalExpress, 0.01);
+    }
+
+    @Test
+    @DisplayName("Debe calcular recargo por kilogramo extra o fracción algorítmicamente")
+    void testCalculadoraDinamicaAlgoritmicaPorPeso() {
+        // Caso 1: 5.0 kg exactos -> Tarifa base exacta ($ 15.000)
+        double envio5Kg = cartService.calcularEnvio(5.0, "estandar");
+        assertEquals(15000.0, envio5Kg, 0.01);
+
+        // Caso 2: 7.2 kg -> 5 kg base ($ 15.000) + ceil(2.2) = 3 kg extra * $ 2.000 ($ 6.000) = $ 21.000
+        double envio7Kg = cartService.calcularEnvio(7.2, "estandar");
+        assertEquals(21000.0, envio7Kg, 0.01);
+
+        // Caso 3: Express con 8.0 kg -> 5 kg base ($ 25.000) + 3 kg extra * $ 3.500 ($ 10.500) = $ 35.500
+        double express8Kg = cartService.calcularEnvio(8.0, "express");
+        assertEquals(35500.0, express8Kg, 0.01);
+
+        // Caso 4: Carga industrial pesada con 180 kg -> 50 kg base ($ 80.000) + 130 kg extra * $ 1.500 ($ 195.000) = $ 275.000
+        double pesado180Kg = cartService.calcularEnvio(180.0, "pesado");
+        assertEquals(275000.0, pesado180Kg, 0.01);
+
+        // Caso 5: Explicación de flete no nula y descriptiva
+        String explicacion = cartService.getExplicacionFlete(7.2, "estandar");
+        assertNotNull(explicacion);
+        assertTrue(explicacion.contains("2.000"));
     }
 
     @Test

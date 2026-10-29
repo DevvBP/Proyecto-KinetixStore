@@ -139,17 +139,34 @@
                                         name="modalidadEnvio"
                                         id="modalidad-envio"
                                         onchange="calcularTotalEnvio(this.value)">
-                                    <option value="local"    ${envioSugerido == 'local' ? 'selected' : ''}>Recoger en Local — $ 0</option>
-                                    <option value="estandar" ${envioSugerido == 'estandar' ? 'selected' : ''}>Envío Estándar — $ 25.000</option>
-                                    <option value="express"  ${envioSugerido == 'express' ? 'selected' : ''}>Express — $ 50.000</option>
-                                    <option value="pesado"   ${envioSugerido == 'pesado' ? 'selected' : ''}>Industrial Pesado — $ 150.000</option>
+                                    <option value="local"    ${envioSugerido == 'local' ? 'selected' : ''}>Recoger en Local — $ 0 COP</option>
+                                    <option value="estandar" ${envioSugerido == 'estandar' ? 'selected' : ''}>
+                                        Envío Estándar — <fmt:formatNumber value="${costoEstandar}" type="number" groupingUsed="true" maxFractionDigits="0"/> COP
+                                    </option>
+                                    <option value="express"  ${envioSugerido == 'express' ? 'selected' : ''}>
+                                        Express Prioritario — <fmt:formatNumber value="${costoExpress}" type="number" groupingUsed="true" maxFractionDigits="0"/> COP
+                                    </option>
+                                    <option value="pesado"   ${envioSugerido == 'pesado' ? 'selected' : ''}>
+                                        Carga Industrial — <fmt:formatNumber value="${costoPesado}" type="number" groupingUsed="true" maxFractionDigits="0"/> COP
+                                    </option>
                                 </select>
                             </div>
 
                             <!-- Costo de envío -->
                             <div class="flex justify-between items-center gap-4">
-                                <span class="font-label-md text-on-surface-variant flex-shrink-0">Envío</span>
+                                <span class="font-label-md text-on-surface-variant flex-shrink-0">Envío Calculado</span>
                                 <span class="font-label-md text-primary-fixed text-right" id="envio-display">$ 0 COP</span>
+                            </div>
+
+                            <!-- Explicación Algorítmica de Envíos -->
+                            <div class="p-3 bg-[#111111] border border-border-industrial rounded text-xs space-y-1">
+                                <p class="text-on-surface font-semibold flex items-center gap-1.5">
+                                    <span class="material-symbols-outlined text-sm text-primary-fixed">scale</span>
+                                    Cálculo Dinámico por Peso
+                                </p>
+                                <p class="text-on-surface-variant" id="flete-explicacion">
+                                    ${explicacionFlete}
+                                </p>
                             </div>
 
                             <!-- Separador -->
@@ -210,18 +227,43 @@
     </div>
 
 <script>
-    /* Cálculo dinámico de total con tarifas de envío */
+    /* Cálculo dinámico algorítmico de total con tarifas de flete según peso */
     const subtotalBase = ${subtotal};
-    const tarifas = { local: 0, estandar: 25000, express: 50000, pesado: 150000 };
+    const pesoTotalKg = ${pesoTotal != null ? pesoTotal : 0};
+
+    const tarifasCalculadas = {
+        local: 0,
+        estandar: ${costoEstandar != null ? costoEstandar : 15000},
+        express: ${costoExpress != null ? costoExpress : 25000},
+        pesado: ${costoPesado != null ? costoPesado : 80000}
+    };
+
+    const explicaciones = {
+        local: "Retiro en sede principal KinexStore (Sin costo logístico adicional).",
+        estandar: pesoTotalKg <= 5 
+            ? "Tarifa base estándar ($ 15.000 COP) para hasta 5.0 kg." 
+            : "Tarifa base ($ 15.000 COP hasta 5 kg) + " + Math.ceil(pesoTotalKg - 5) + " kg extra a $ 2.000 COP/kg.",
+        express: pesoTotalKg <= 5 
+            ? "Tarifa express prioritaria ($ 25.000 COP) para hasta 5.0 kg." 
+            : "Tarifa express ($ 25.000 COP hasta 5 kg) + " + Math.ceil(pesoTotalKg - 5) + " kg extra a $ 3.500 COP/kg.",
+        pesado: pesoTotalKg <= 50 
+            ? "Tarifa flete industrial pesado ($ 80.000 COP) hasta 50.0 kg." 
+            : "Tarifa industrial ($ 80.000 COP hasta 50 kg) + " + Math.ceil(pesoTotalKg - 50) + " kg extra a $ 1.500 COP/kg."
+    };
 
     function formatCOP(n) {
         return '$ ' + Math.round(n).toLocaleString('es-CO') + ' COP';
     }
 
     function calcularTotalEnvio(modalidad) {
-        const envio = tarifas[modalidad] || 0;
+        const envio = tarifasCalculadas[modalidad] !== undefined ? tarifasCalculadas[modalidad] : 0;
         document.getElementById('envio-display').textContent = formatCOP(envio);
         document.getElementById('total-display').textContent = formatCOP(subtotalBase + envio);
+        
+        const explEl = document.getElementById('flete-explicacion');
+        if (explEl && explicaciones[modalidad]) {
+            explEl.textContent = explicaciones[modalidad];
+        }
     }
 
     // Inicializar con modalidad pre-seleccionada
