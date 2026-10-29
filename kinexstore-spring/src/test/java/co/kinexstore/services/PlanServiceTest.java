@@ -106,3 +106,4 @@ class PlanServiceTest {
         assertEquals("%PDF-", magicHeader, "El encabezado del flujo binario debe ser un documento PDF legítimo");
     }
 }
+

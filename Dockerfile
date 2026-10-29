@@ -49,3 +49,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
 
 # Comando de arranque del servicio
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.war"]
+
