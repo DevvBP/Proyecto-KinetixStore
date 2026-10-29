@@ -64,7 +64,7 @@
                 <!-- Goal: Fuerza -->
                 <a class="group relative bg-surface-charcoal border border-border-industrial rounded-DEFAULT overflow-hidden
                           hover:border-primary-fixed transition-all duration-300 flex flex-col h-48 md:h-64 product-card"
-                   href="${contextPath}/app?accion=listarEquipamiento" id="goal-fuerza">
+                   href="${contextPath}/planes/configurar" id="goal-fuerza">
                     <div class="absolute inset-0 z-0">
                         <div class="absolute inset-0 bg-cover bg-center opacity-20 group-hover:opacity-40 transition-opacity duration-500
                                     mix-blend-luminosity grayscale group-hover:grayscale-0 product-image"
@@ -86,7 +86,7 @@
                 <!-- Goal: Cardio -->
                 <a class="group relative bg-surface-charcoal border border-border-industrial rounded-DEFAULT overflow-hidden
                           hover:border-primary-fixed transition-all duration-300 flex flex-col h-48 md:h-64 product-card"
-                   href="${contextPath}/app?accion=listarEquipamiento" id="goal-cardio">
+                   href="${contextPath}/planes/configurar" id="goal-cardio">
                     <div class="absolute inset-0 z-0">
                         <div class="absolute inset-0 bg-cover bg-center opacity-20 group-hover:opacity-40 transition-opacity duration-500
                                     mix-blend-luminosity grayscale group-hover:grayscale-0 product-image"
@@ -108,7 +108,7 @@
                 <!-- Goal: Recuperación -->
                 <a class="group relative bg-surface-charcoal border border-border-industrial rounded-DEFAULT overflow-hidden
                           hover:border-primary-fixed transition-all duration-300 flex flex-col h-48 md:h-64 product-card"
-                   href="${contextPath}/app?accion=listarSuplementos" id="goal-recuperacion">
+                   href="${contextPath}/planes/configurar" id="goal-recuperacion">
                     <div class="absolute inset-0 z-0">
                         <div class="absolute inset-0 bg-cover bg-center opacity-20 group-hover:opacity-40 transition-opacity duration-500
                                     mix-blend-luminosity grayscale group-hover:grayscale-0 product-image"
@@ -130,7 +130,7 @@
                 <!-- Goal: Pérdida de Grasa -->
                 <a class="group relative bg-surface-charcoal border border-border-industrial rounded-DEFAULT overflow-hidden
                           hover:border-primary-fixed transition-all duration-300 flex flex-col h-48 md:h-64 product-card"
-                   href="${contextPath}/app?accion=listarSuplementos" id="goal-perdida-grasa">
+                   href="${contextPath}/planes/configurar" id="goal-perdida-grasa">
                     <div class="absolute inset-0 z-0">
                         <div class="absolute inset-0 bg-cover bg-center opacity-20 group-hover:opacity-40 transition-opacity duration-500
                                     mix-blend-luminosity grayscale group-hover:grayscale-0 product-image"

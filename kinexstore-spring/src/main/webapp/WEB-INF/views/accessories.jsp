@@ -40,15 +40,15 @@
                                    <c:if test="${categoriasSeleccionadas.contains(cat)}">checked</c:if>>
                             <span class="font-body-md text-sm text-on-surface">
                                 <c:choose>
-                                    <c:when test="${cat == 'proteccion'}">🛡️ Protección y Soporte</c:when>
-                                    <c:when test="${cat == 'agarre'}">✋ Agarre y Grip</c:when>
-                                    <c:when test="${cat == 'hidratacion'}">🥤 Hidratación y Shakers</c:when>
-                                    <c:when test="${cat == 'funcional'}">⚡ Funcional y Poleas</c:when>
-                                    <c:when test="${cat == 'recuperacion'}">🧘 Recuperación Miofascial</c:when>
-                                    <c:when test="${cat == 'pesas'}">🏋️ Accesorios de Barra</c:when>
-                                    <c:when test="${cat == 'fuerza'}">⛓️ Dominadas y Sobrecarga</c:when>
-                                    <c:when test="${cat == 'medicion'}">📊 Medición Corporal</c:when>
-                                    <c:when test="${cat == 'transporte'}">🎒 Bolsos y Maletines</c:when>
+                                    <c:when test="${cat == 'proteccion'}">Protección y Soporte</c:when>
+                                    <c:when test="${cat == 'agarre'}">Agarre y Grip</c:when>
+                                    <c:when test="${cat == 'hidratacion'}">Hidratación y Shakers</c:when>
+                                    <c:when test="${cat == 'funcional'}">Entrenamiento Funcional</c:when>
+                                    <c:when test="${cat == 'recuperacion'}">Recuperación y Movilidad</c:when>
+                                    <c:when test="${cat == 'pesas'}">Accesorios de Barra</c:when>
+                                    <c:when test="${cat == 'fuerza'}">Fuerza y Sobrecarga</c:when>
+                                    <c:when test="${cat == 'medicion'}">Medición y Control</c:when>
+                                    <c:when test="${cat == 'transporte'}">Bolsos y Transporte</c:when>
                                     <c:otherwise>${cat}</c:otherwise>
                                 </c:choose>
                             </span>
