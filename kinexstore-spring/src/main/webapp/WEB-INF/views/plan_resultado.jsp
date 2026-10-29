@@ -86,6 +86,27 @@
         </div>
 
         <!-- ============================================================
+             DESCARGA DEL PLAN EN FORMATO PDF PROFESIONAL (EXPORTACIÓN)
+             ============================================================ -->
+        <div class="mb-8 p-5 bg-gradient-to-r from-primary-fixed/10 via-surface-charcoal to-surface-charcoal border border-primary-fixed/40 rounded-DEFAULT flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-full bg-primary-fixed/20 border border-primary-fixed flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-2xl text-primary-fixed">picture_as_pdf</span>
+                </div>
+                <div>
+                    <h3 class="font-headline-sm text-primary text-base font-bold">Dossier de Alto Rendimiento en PDF</h3>
+                    <p class="text-xs text-on-surface-variant">Plan de Macros, Protocolo de Suplementación y Rutina semanal con RPE y descansos en 3 tablas técnicas.</p>
+                </div>
+            </div>
+            <a href="${contextPath}/planes/${planGenerado.id}/pdf"
+               class="inline-flex items-center gap-2 bg-primary-fixed text-black px-6 py-3 rounded font-label-md font-bold uppercase hover:bg-white transition-all shadow-md flex-shrink-0"
+               id="btn-descargar-pdf-plan">
+                <span class="material-symbols-outlined text-lg">download</span>
+                Descargar Plan en PDF
+            </a>
+        </div>
+
+        <!-- ============================================================
              SINERGIA E-COMMERCE: Suplementos Reales del Catálogo (P3)
              ============================================================ -->
         <c:if test="${not empty suplementosReales}">

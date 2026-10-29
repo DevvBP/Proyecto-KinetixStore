@@ -22,6 +22,10 @@ import co.kinexstore.services.PlanService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -41,6 +45,7 @@ public class EcommerceController {
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
     private final UserFitnessProfileRepository fitnessProfileRepository;
+    private final PasswordEncoder passwordEncoder;
 
     // ----------------------------------------------------------------
     // 1. FRONT CONTROLLER DISPATCHER (/ & /app)
@@ -57,6 +62,9 @@ public class EcommerceController {
 
             case "listarsuplementos":
                 return listarSuplementos(categorias, model);
+
+            case "listaraccesorios":
+                return listarAccesorios(categorias, model);
 
             case "vercarrito":
                 return verCarrito(model, session);
@@ -111,6 +119,16 @@ public class EcommerceController {
         model.addAttribute("categoriasSeleccionadas", categorias != null ? categorias : new ArrayList<>());
         model.addAttribute("vistaActiva", "suplementos");
         return "supplements";
+    }
+
+    @GetMapping("/catalogo/accesorios")
+    public String listarAccesorios(@RequestParam(value = "cat", required = false) List<String> categorias, Model model) {
+        List<Product> productos = catalogService.obtenerAccesorios(categorias);
+        model.addAttribute("productos", productos);
+        model.addAttribute("categoriasDisponibles", catalogService.getCategoriasAccesorios());
+        model.addAttribute("categoriasSeleccionadas", categorias != null ? categorias : new ArrayList<>());
+        model.addAttribute("vistaActiva", "accesorios");
+        return "accessories";
     }
 
     // ----------------------------------------------------------------
@@ -309,6 +327,7 @@ public class EcommerceController {
         guardarPerfilAtleta(usuarioActual, nivel, objetivo, edad, pesoKg, estaturaCm, dias, lugar, dieta);
 
         TrainingPlan plan = planService.crearPlan(nivel, dias, objetivo, nombreAtleta, emailAtleta);
+        session.setAttribute("ultimoPlanGenerado", plan);
         List<Product> suplementosReales = catalogService.getSuplementosRealesPorObjetivo(objetivo);
 
         model.addAttribute("plan", plan);
@@ -352,6 +371,7 @@ public class EcommerceController {
 
         TrainingPlan plan = planService.crearPlan(nivel, dias, objetivo,
                 usuarioActual.getNombreCompleto(), usuarioActual.getEmail());
+        session.setAttribute("ultimoPlanGenerado", plan);
         List<Product> suplementosReales = catalogService.getSuplementosRealesPorObjetivo(objetivo);
 
         model.addAttribute("plan", plan);
@@ -360,6 +380,43 @@ public class EcommerceController {
         model.addAttribute("suplementosReales", suplementosReales);
         model.addAttribute("vistaActiva", "training");
         return "plan_resultado";
+    }
+
+    /**
+     * Endpoint para exportación y descarga directa del Plan Personalizado en PDF.
+     */
+    @GetMapping({"/planes/{id}/pdf", "/planes/descargar-pdf"})
+    public ResponseEntity<byte[]> descargarPlanPdf(@PathVariable(value = "id", required = false) Long planId,
+                                                   HttpSession session) {
+        User usuarioActual = (User) session.getAttribute("usuarioActual");
+        TrainingPlan plan = null;
+        if (planId != null) {
+            plan = planService.buscarPorId(planId).orElse(null);
+        }
+        if (plan == null) {
+            plan = (TrainingPlan) session.getAttribute("ultimoPlanGenerado");
+        }
+        if (plan == null) {
+            plan = TrainingPlan.builder()
+                    .nivel(NivelExperiencia.INTERMEDIO)
+                    .diasPorSemana(4)
+                    .objetivo(ObjetivoPrincipal.HIPERTROFIA)
+                    .nombreUsuario(usuarioActual != null ? usuarioActual.getNombreCompleto() : "Atleta KinexStore")
+                    .emailUsuario(usuarioActual != null ? usuarioActual.getEmail() : "atleta@kinexstore.co")
+                    .build();
+        }
+
+        UserFitnessProfile perfil = null;
+        if (usuarioActual != null) {
+            perfil = fitnessProfileRepository.findByUserId(usuarioActual.getId()).orElse(null);
+        }
+
+        byte[] pdfBytes = planService.exportarPlanPdf(plan, perfil);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"Plan_KinexStore_" + (plan.getObjetivo() != null ? plan.getObjetivo().name().toLowerCase() : "fitness") + ".pdf\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdfBytes);
     }
 
     // ----------------------------------------------------------------
@@ -405,7 +462,7 @@ public class EcommerceController {
                 .nombre(dto.getNombre().trim())
                 .apellido(dto.getApellido().trim())
                 .email(dto.getEmail().trim().toLowerCase())
-                .passwordHash(dto.getPassword())
+                .passwordHash(passwordEncoder.encode(dto.getPassword()))
                 .telefono(dto.getTelefono().trim())
                 .pais(dto.getPais())
                 .estadoProvincia(dto.getEstadoProvincia().trim())
@@ -490,7 +547,7 @@ public class EcommerceController {
 
             case "login":
                 Optional<User> userOpt = userRepository.findByEmail(email != null ? email.trim().toLowerCase() : "");
-                if (userOpt.isPresent() && userOpt.get().getPasswordHash().equals(password)) {
+                if (userOpt.isPresent() && (passwordEncoder.matches(password, userOpt.get().getPasswordHash()) || userOpt.get().getPasswordHash().equals(password))) {
                     session.setAttribute("usuarioActual", userOpt.get());
 
                     String redirect = (String) session.getAttribute("redirectUrlPostAuth");
