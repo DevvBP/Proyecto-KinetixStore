@@ -14,6 +14,7 @@ import co.kinexstore.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -26,16 +27,32 @@ public class DataInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final PromotionRepository promotionRepository;
     private final SupplementBatchRepository supplementBatchRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) {
-        // Si hay menos de 27 productos (21 máquinas + 6 suplementos), sembramos el catálogo completo oficial
-        if (productRepository.count() < 27) {
+        // Catálogo completo oficial: 21 máquinas + 10 suplementos + 16 accesorios = 47 productos
+        if (productRepository.count() < 47) {
+            supplementBatchRepository.deleteAll();
             productRepository.deleteAll();
             inicializarCatalogoCompleto();
         }
+        // Inicializar o actualizar usuarios con BCrypt
         if (userRepository.count() == 0) {
             inicializarUsuarios();
+        } else {
+            userRepository.findByEmail("admin@kinexstore.co").ifPresent(admin -> {
+                if (!admin.getPasswordHash().startsWith("$2a$")) {
+                    admin.setPasswordHash(passwordEncoder.encode("admin"));
+                    userRepository.save(admin);
+                }
+            });
+            userRepository.findByEmail("carlos.gomez@gmail.com").ifPresent(cliente -> {
+                if (!cliente.getPasswordHash().startsWith("$2a$")) {
+                    cliente.setPasswordHash(passwordEncoder.encode("cliente"));
+                    userRepository.save(cliente);
+                }
+            });
         }
         if (promotionRepository.count() == 0) {
             inicializarPromociones();
@@ -428,6 +445,276 @@ public class DataInitializer implements CommandLineRunner {
                 .registroInvima("RSA-0023441-2024")
                 .stock(20)
                 .disponible(true)
+                .build(),
+
+            // ---- SUPLEMENTOS ADICIONALES (Imágenes 22 a 25) ----
+            Product.builder()
+                .nombre("Whey Protein Isolate Vainilla Gourmet")
+                .descripcion("Proteína aislada de suero 100% microfiltrada de flujo cruzado. 27g de proteína pura por servicio, cero azúcares añadidos.")
+                .precio(260000)
+                .pesoKg(2.0)
+                .categoria("proteinas")
+                .imagenPath("assets/img/prod-22.jpeg")
+                .tipo(TipoProducto.SUPLEMENTO)
+                .numeroLote("LOT-WHEY-2026B")
+                .fechaVencimiento(LocalDate.of(2027, 8, 15))
+                .registroInvima("RSA-0919281")
+                .stock(35)
+                .disponible(true)
+                .build(),
+
+            Product.builder()
+                .nombre("Creatina Monohidratada Micronizada 500g")
+                .descripcion("Monohidrato de creatina de grado farmacéutico 200 mesh. Aumenta la potencia explosiva y el volumen celular.")
+                .precio(140000)
+                .pesoKg(0.5)
+                .categoria("creatinas")
+                .imagenPath("assets/img/prod-23.jpeg")
+                .tipo(TipoProducto.SUPLEMENTO)
+                .numeroLote("LOT-CREA-2026C")
+                .fechaVencimiento(LocalDate.of(2028, 1, 18))
+                .registroInvima("RSA-0203411-2023")
+                .stock(42)
+                .disponible(true)
+                .build(),
+
+            Product.builder()
+                .nombre("BCAA Complex + Electrolitos Hydration")
+                .descripcion("Matriz de aminoácidos ramificados 2:1:1 enriquecida con potasio y magnesio para hidratación y recuperación muscular continua.")
+                .precio(160000)
+                .pesoKg(0.5)
+                .categoria("aminoacidos")
+                .imagenPath("assets/img/prod-24.jpeg")
+                .tipo(TipoProducto.SUPLEMENTO)
+                .numeroLote("LOT-BCAA-2026D")
+                .fechaVencimiento(LocalDate.of(2028, 11, 20))
+                .registroInvima("RSA-0016335-2022")
+                .stock(28)
+                .disponible(true)
+                .build(),
+
+            Product.builder()
+                .nombre("Pre-Workout Nootrópico Focus & Pump")
+                .descripcion("Fórmula avanzada pre-entrenamiento con beta-alanina, citrulina malato y nootrópicos para concentración mental máxima y bombeo.")
+                .precio(320000)
+                .pesoKg(0.6)
+                .categoria("preentrenos")
+                .imagenPath("assets/img/prod-25.jpeg")
+                .tipo(TipoProducto.SUPLEMENTO)
+                .numeroLote("LOT-PRE-2026E")
+                .fechaVencimiento(LocalDate.of(2028, 10, 15))
+                .registroInvima("RSA-0020114-2023")
+                .stock(15)
+                .disponible(true)
+                .build(),
+
+            // ---- LÍNEA OFICIAL DE ACCESORIOS DE ENTRENAMIENTO (Imágenes 26 a 41) ----
+            Product.builder()
+                .nombre("Cinturón de Levantamiento Profesional Cuero")
+                .descripcion("Cinturón de potencia con acolchado lumbar de alta densidad y hebilla de acero de doble pasador. Soporte óptimo para sentadillas y peso muerto.")
+                .precio(120000)
+                .pesoKg(0.7)
+                .categoria("proteccion")
+                .imagenPath("assets/img/prod-26.jpeg")
+                .tipo(TipoProducto.ACCESORIO)
+                .dimensiones("100x15x1 cm")
+                .stock(25)
+                .disponible(true)
+                .build(),
+
+            Product.builder()
+                .nombre("Correas de Agarre Lifting Straps Pro")
+                .descripcion("Straps de nylon de alta tenacidad con almohadilla de neopreno en muñeca. Elimina la fatiga del antebrazo en tirones pesados.")
+                .precio(60000)
+                .pesoKg(0.12)
+                .categoria("agarre")
+                .imagenPath("assets/img/prod-27.jpeg")
+                .tipo(TipoProducto.ACCESORIO)
+                .dimensiones("60x4 cm")
+                .stock(30)
+                .disponible(true)
+                .build(),
+
+            Product.builder()
+                .nombre("Muñequeras Elásticas de Soporte Heavy Duty")
+                .descripcion("Par de muñequeras con banda de pulgar y velcro industrial para máxima compresión y estabilidad articular en presses.")
+                .precio(45000)
+                .pesoKg(0.1)
+                .categoria("proteccion")
+                .imagenPath("assets/img/prod-28.jpeg")
+                .tipo(TipoProducto.ACCESORIO)
+                .dimensiones("50x8 cm")
+                .stock(25)
+                .disponible(true)
+                .build(),
+
+            Product.builder()
+                .nombre("Rodilleras de Neopreno 7mm Compresión")
+                .descripcion("Rodilleras anatómicas de 7mm aprobadas para powerlifting. Retienen el calor articular y potencian el rebote seguro en sentadilla.")
+                .precio(90000)
+                .pesoKg(0.35)
+                .categoria("proteccion")
+                .imagenPath("assets/img/prod-29.jpeg")
+                .tipo(TipoProducto.ACCESORIO)
+                .dimensiones("30x18 cm")
+                .stock(20)
+                .disponible(true)
+                .build(),
+
+            Product.builder()
+                .nombre("Shaker Deportivo 700ml con Bola Mezcladora")
+                .descripcion("Vaso mezclador libre de BPA con tapa hermética a rosca, boquilla antifugas y resorte de acero quirúrgico para mezclas sin grumos.")
+                .precio(35000)
+                .pesoKg(0.18)
+                .categoria("hidratacion")
+                .imagenPath("assets/img/prod-30.jpeg")
+                .tipo(TipoProducto.ACCESORIO)
+                .dimensiones("9x9x24 cm")
+                .stock(40)
+                .disponible(true)
+                .build(),
+
+            Product.builder()
+                .nombre("Magnesio Deportivo en Bloque Gym Chalk")
+                .descripcion("Carbonato de magnesio puro para absorción instantánea de sudor. Asegura agarre firme y seco en barra y anillas.")
+                .precio(25000)
+                .pesoKg(0.25)
+                .categoria("agarre")
+                .imagenPath("assets/img/prod-31.jpeg")
+                .tipo(TipoProducto.ACCESORIO)
+                .dimensiones("15x10x5 cm")
+                .stock(50)
+                .disponible(true)
+                .build(),
+
+            Product.builder()
+                .nombre("Fortalecedor de Agarre Hand Gripper Ajustable")
+                .descripcion("Pinza con resistencia ajustable de 10 a 60 kg mediante dial giratorio. Mango ergonómico de goma antideslizante.")
+                .precio(35000)
+                .pesoKg(0.3)
+                .categoria("agarre")
+                .imagenPath("assets/img/prod-32.jpeg")
+                .tipo(TipoProducto.ACCESORIO)
+                .dimensiones("16x11 cm")
+                .stock(35)
+                .disponible(true)
+                .build(),
+
+            Product.builder()
+                .nombre("Tobilleras Acolchadas para Polea (Par)")
+                .descripcion("Correas de tobillo con forro de neopreno y argollas D soldadas en acero. Diseñadas para patadas de glúteo y abductores.")
+                .precio(40000)
+                .pesoKg(0.25)
+                .categoria("funcional")
+                .imagenPath("assets/img/prod-33.jpeg")
+                .tipo(TipoProducto.ACCESORIO)
+                .dimensiones("25x10 cm")
+                .stock(30)
+                .disponible(true)
+                .build(),
+
+            Product.builder()
+                .nombre("Barra Recta Giratoria para Polea")
+                .descripcion("Barra de acero macizo cromado con moleteado diamante y articulación giratoria central fluida para jalones y bíceps.")
+                .precio(75000)
+                .pesoKg(2.5)
+                .categoria("funcional")
+                .imagenPath("assets/img/prod-34.jpeg")
+                .tipo(TipoProducto.ACCESORIO)
+                .dimensiones("50x3 cm")
+                .stock(18)
+                .disponible(true)
+                .build(),
+
+            Product.builder()
+                .nombre("Rodillo de Liberación Miofascial Foam Roller")
+                .descripcion("Rodillo de masaje muscular con relieve 3D de alta densidad para activación pre-entreno y recuperación del tejido fascial.")
+                .precio(55000)
+                .pesoKg(0.8)
+                .categoria("recuperacion")
+                .imagenPath("assets/img/prod-35.jpeg")
+                .tipo(TipoProducto.ACCESORIO)
+                .dimensiones("45x14 cm")
+                .stock(22)
+                .disponible(true)
+                .build(),
+
+            Product.builder()
+                .nombre("Seguros de Bloqueo Rápido para Barra Olímpica")
+                .descripcion("Collares tipo Lock-Jaw con leva de presión para barras olímpicas de 50mm. Fijan los discos con seguridad total.")
+                .precio(30000)
+                .pesoKg(0.35)
+                .categoria("pesas")
+                .imagenPath("assets/img/prod-36.jpeg")
+                .tipo(TipoProducto.ACCESORIO)
+                .dimensiones("8x8 cm")
+                .stock(45)
+                .disponible(true)
+                .build(),
+
+            Product.builder()
+                .nombre("Set de Bandas Elásticas de Resistencia Loop")
+                .descripcion("Juego de 5 bandas de látex 100% natural con diferentes niveles de tensión progresiva para calentamiento y glúteos.")
+                .precio(45000)
+                .pesoKg(0.4)
+                .categoria("funcional")
+                .imagenPath("assets/img/prod-37.jpeg")
+                .tipo(TipoProducto.ACCESORIO)
+                .dimensiones("30x5 cm")
+                .stock(35)
+                .disponible(true)
+                .build(),
+
+            Product.builder()
+                .nombre("Cinturón para Fondos y Dominadas Lastradas (Dip Belt)")
+                .descripcion("Arnés lumbar reforzado con cadena de acero y mosquetones de seguridad para sobrecarga progresiva con discos.")
+                .precio(85000)
+                .pesoKg(1.2)
+                .categoria("fuerza")
+                .imagenPath("assets/img/prod-38.jpeg")
+                .tipo(TipoProducto.ACCESORIO)
+                .dimensiones("85x16 cm")
+                .stock(15)
+                .disponible(true)
+                .build(),
+
+            Product.builder()
+                .nombre("Báscula Digital Corporal de Bioimpedancia")
+                .descripcion("Báscula inteligente con sensores de alta precisión para registro de peso corporal, porcentaje de grasa y masa magra.")
+                .precio(65000)
+                .pesoKg(1.5)
+                .categoria("medicion")
+                .imagenPath("assets/img/prod-39.jpeg")
+                .tipo(TipoProducto.ACCESORIO)
+                .dimensiones("30x30x2 cm")
+                .stock(20)
+                .disponible(true)
+                .build(),
+
+            Product.builder()
+                .nombre("Bolso Deportivo Gym Duffel Bag Resistente")
+                .descripcion("Maletín deportivo impermeable con compartimento ventilado para calzado, bolsillo para shaker y correa acolchada.")
+                .precio(120000)
+                .pesoKg(0.9)
+                .categoria("transporte")
+                .imagenPath("assets/img/prod-40.jpeg")
+                .tipo(TipoProducto.ACCESORIO)
+                .dimensiones("55x30x30 cm")
+                .stock(18)
+                .disponible(true)
+                .build(),
+
+            Product.builder()
+                .nombre("Colchoneta de Entrenamiento Profesional 15mm")
+                .descripcion("Mat de espuma NBR de alta densidad con superficie antideslizante y correa de transporte. Absorción óptima de impactos.")
+                .precio(180000)
+                .pesoKg(2.2)
+                .categoria("funcional")
+                .imagenPath("assets/img/prod-41.jpeg")
+                .tipo(TipoProducto.ACCESORIO)
+                .dimensiones("180x60x1.5 cm")
+                .stock(15)
+                .disponible(true)
                 .build()
         );
 
@@ -456,7 +743,7 @@ public class DataInitializer implements CommandLineRunner {
             .nombre("Admin")
             .apellido("KinexStore")
             .email("admin@kinexstore.co")
-            .passwordHash("admin")
+            .passwordHash(passwordEncoder.encode("admin"))
             .telefono("+57 300 123 4567")
             .direccion("Edificio Kinex Corporate, Piso 12")
             .pais("Colombia")
@@ -472,7 +759,7 @@ public class DataInitializer implements CommandLineRunner {
             .nombre("Carlos")
             .apellido("Gómez")
             .email("carlos.gomez@gmail.com")
-            .passwordHash("cliente")
+            .passwordHash(passwordEncoder.encode("cliente"))
             .telefono("+57 312 987 6543")
             .direccion("Calle 85 # 11-53, Chapinero")
             .pais("Colombia")
